@@ -1,11 +1,22 @@
 import math
 import os.path
+import random
 
 import h5py
 import numpy as np
 from numba import jit
 from torch.utils.data import Dataset
 from scipy.spatial.transform import Rotation as R
+
+
+@jit(nopython=True)
+def projectHelper(base, coords, offset):
+    for coord in coords:
+        x, y, z = coord
+        x = 64 - round(x + offset / 2)
+        z = round(z + offset / 2)
+        if 0 <= x < 64 and 0 <= z < 64 and (np.isnan(base[x, z]) or y < base[x, z]):
+            base[x, z] = y
 
 
 # @jit(nopython=True, fastmath=False, parallel=True)
@@ -23,7 +34,7 @@ def project(inp, phi, omega):
         [[r * math.sin(omega) * math.cos(phi)], [r * math.cos(omega)], [r * math.sin(omega) * math.sin(phi)]])
 
     coords = np.asarray(mat.nonzero()) - offset
-    coords /= 2
+    coords /= 3
 
     coords = coords - camera_pos
 
@@ -48,12 +59,7 @@ def project(inp, phi, omega):
 
     base = np.empty((64, 64), np.float32)
     base[:] = np.nan
-    for coord in coords:
-        x, y, z = coord
-        x = 64 - round(x + offset / 2)
-        z = round(z + offset / 2)
-        if 0 <= x < 64 and 0 <= z < 64 and (np.isnan(base[x, z]) or y < base[x, z]):
-            base[x, z] = y
+    projectHelper(base, coords, offset)
 
     # denom = np.nanmax(base) - np.nanmin(base) if np.nanmax(base) - np.nanmin(base) != 0 else \
     #     np.nanmax(base)
@@ -80,9 +86,11 @@ class Model40Dataset(Dataset):
         return self.data.shape[0]
 
     def __getitem__(self, item):
+        phi = random.random() * 2 * np.pi
+        omega = random.random() * np.pi
         return (self.data[item].reshape((1, 32, 32, 32)).astype(np.float32),
-                np.random.rand(6).astype(np.float32)), \
-               project(self.data[item].reshape((32, 32, 32)), np.pi / 3, np.pi / 2) \
+                np.array([phi, omega, np.sin(phi), np.cos(phi), np.sin(omega), np.cos(omega)], dtype=np.float32)), \
+               project(self.data[item].reshape((32, 32, 32)), phi, omega) \
                    .reshape(
                    (1, 64, 64)).astype(np.float32)
         # .repeat(2, axis=0) \

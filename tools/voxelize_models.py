@@ -34,7 +34,7 @@ if flush:
         with tqdm(total=num_files) as pbar:
             for root, dirs, files in os.walk(input_dir):
                 for file in files:
-                    if file.endswith(".binvox"):
+                    if file.endswith(".binvox") or file.endswith(".mat"):
                         pbar.update(1)
                         path = os.path.join(root, file)
                         os.remove(path)
@@ -79,7 +79,7 @@ if recursive:
                 if not os.path.exists(mat_path):
                     binvox_path = os.path.splitext(path)[0] + ".binvox"
                     if not os.path.exists(binvox_path):
-                        subprocess.run(["binvox", "-d", "30", path], stdout=subprocess.DEVNULL,
+                        subprocess.run(["binvox", "-e", "-cb", "-d", "30", path], stdout=subprocess.DEVNULL,
                                        stderr=subprocess.DEVNULL)
                     model = binvox_rw.read_as_3d_array(open(binvox_path, 'rb'))
                     voxels = model.data.astype(np.int32).transpose(0, 2, 1)
@@ -100,7 +100,7 @@ else:
             if not os.path.exists(mat_path):
                 binvox_path = os.path.splitext(path)[0] + ".binvox"
                 if not os.path.exists(binvox_path):
-                    subprocess.run(["binvox", "-d", "30", path], stdout=subprocess.DEVNULL,
+                    subprocess.run(["binvox", "-e", "-cb", "-d", "30", path], stdout=subprocess.DEVNULL,
                                    stderr=subprocess.DEVNULL)
                 model = binvox_rw.read_as_3d_array(open(binvox_path, 'rb'))
                 voxels = model.data.astype(np.int32).transpose(0, 2, 1)

@@ -22,10 +22,15 @@ class Autoencoder(torch.nn.Module):
             torch.nn.LeakyReLU(negative_slope=0.2),
             # torch.nn.MaxPool3d(kernel_size=(2, 2, 2)),
             torch.nn.Flatten(),
-            torch.nn.Linear(13824, 11658)
+            # torch.nn.Linear(13824, 11658)
         )
         self.decoder = torch.nn.Sequential(
-            # torch.nn.Linear(8006, 8192),
+            torch.nn.Linear(13824 + 6, 8000),
+            torch.nn.LeakyReLU(0.2),
+            # torch.nn.Linear(8000, 8000),
+            # torch.nn.LeakyReLU(0.2),
+            torch.nn.Linear(8000, 11664),
+            torch.nn.LeakyReLU(0.2),
             torch.nn.Unflatten(1, (16, 27, 27)),
             torch.nn.ConvTranspose2d(16, 8, (3, 3)),
             torch.nn.LeakyReLU(0.2),
@@ -34,8 +39,8 @@ class Autoencoder(torch.nn.Module):
             torch.nn.Upsample(scale_factor=2),
             torch.nn.LeakyReLU(0.2),
             torch.nn.ConvTranspose2d(4, 1, (3, 3), (1, 1)),
-            torch.nn.LeakyReLU(0.2),
-            # torch.nn.Sigmoid()
+            torch.nn.ReLU(),
+            # torch.nn.Sigmoid(),
         )
 
     def forward(self, x, angles):

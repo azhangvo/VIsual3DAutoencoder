@@ -76,7 +76,7 @@ np.savetxt(test_split_path, x_test_paths, delimiter=",", fmt="%s")
 data_file = h5py.File(data_file_path, "w")
 
 data_file.create_dataset("x_train", (len(x_train_paths), 32, 32, 32), np.int8)
-data_file.create_dataset("x_test", (len(x_test_paths), 32, 32, 32), np.int8)
+data_file.create_dataset("x_test", (len(x_test_paths    ), 32, 32, 32), np.int8)
 
 with tqdm(total=num_files) as pbar:
     for i, path in enumerate(x_train_paths):
