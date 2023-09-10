@@ -11,7 +11,7 @@ from models.autoencoder.autoencoder import Autoencoder
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-dataset = DataLoader(Model40Dataset("/media/endian/3965-6439/SmallModel40/", "x_test"), shuffle=True)
+dataset = DataLoader(Model40Dataset(r"C:\Users\Arthur Zhang\Documents\ModelNet40", "x_test"), shuffle=True)
 iterable = iter(dataset)
 
 
@@ -24,10 +24,14 @@ def visualize_model(model):
         inputs, labels = next(iterable)
         inputs, angles = inputs
         inputs = inputs.to(device)
+        angles = angles.to(device)
         labels = labels.to(device)
 
         outputs = model(inputs, angles)
 
+        inputs = inputs.cpu()
+        labels = labels.cpu()
+        outputs = outputs.cpu()
         ax = plt.figure().add_subplot(projection='3d')
         ax.set_xlabel('x')
         ax.set_ylabel('z')
@@ -48,6 +52,7 @@ if __name__ == "__main__":
     model = Autoencoder()
 
     model.load_state_dict(torch.load("./best_model_params.pt"))
+    model = model.to(device)
 
     visualize_model(model)
 

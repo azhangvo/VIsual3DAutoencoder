@@ -81,17 +81,25 @@ class Model40Dataset(Dataset):
         self.data_dir = data_dir
         self.data_file = h5py.File(os.path.join(data_dir, "data.hdf5"))
         self.data = self.data_file[database_name]
+        self.proj = self.data_file[database_name + "_proj"]
+        # self.data = np.array(h5py.File(os.path.join(data_dir, "data.hdf5"))[database_name])
+        # self.proj = np.array(h5py.File(os.path.join(data_dir, "data.hdf5"))[database_name + "_proj"])
+        # self.proj = np.array(
+        #     [project(self.data[i].reshape((32, 32, 32)), np.pi / 4, np.pi / 4).reshape(
+        #         (1, 64, 64)).astype(np.float32) for i in range(self.data.shape[0])])
 
     def __len__(self):
         return self.data.shape[0]
 
     def __getitem__(self, item):
-        phi = random.random() * 2 * np.pi
-        omega = random.random() * np.pi
-        return (self.data[item].reshape((1, 32, 32, 32)).astype(np.float32),
-                np.array([phi, omega, np.sin(phi), np.cos(phi), np.sin(omega), np.cos(omega)], dtype=np.float32)), \
-               project(self.data[item].reshape((32, 32, 32)), phi, omega) \
-                   .reshape(
-                   (1, 64, 64)).astype(np.float32)
+        # phi = random.random() * 2 * np.pi
+        # omega = random.random() * np.pi
+        return self.data[item].reshape((1, 32, 32, 32)).astype(np.float32), self.proj[item].reshape((64, 64, 64))
+
+        # return (self.data[item].reshape((1, 32, 32, 32)).astype(np.float32),
+        #         np.array([phi, omega, np.sin(phi), np.cos(phi), np.sin(omega), np.cos(omega)], dtype=np.float32)), \
+        #        project(self.data[item].reshape((32, 32, 32)), phi, omega) \
+        #            .reshape(
+        #            (1, 64, 64)).astype(np.float32)
         # .repeat(2, axis=0) \
         # .repeat(2, axis=1)
